@@ -15,7 +15,7 @@ A .NET 9 console application that uses a PIR (Passive Infrared) motion sensor on
 
 - Raspberry Pi with GPIO support
 - .NET 9 SDK installed
-- PIR motion sensor connected to GPIO pin (default: GPIO 17)
+- PIR motion sensor connected to GPIO pin (default: GPIO 4)
 - Video capture device (USB camera or Raspberry Pi Camera)
 - FFmpeg installed (`sudo apt-get install ffmpeg`)
 

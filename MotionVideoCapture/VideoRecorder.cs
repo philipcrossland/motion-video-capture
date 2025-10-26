@@ -15,10 +15,11 @@ public class VideoRecorder
         _logger = logger;
         
         // Create output directory if it doesn't exist
-        if (!Directory.Exists(_options.OutputFolder))
+        var outputFolder = GetOutputFolder();
+        if (!Directory.Exists(outputFolder))
         {
-            Directory.CreateDirectory(_options.OutputFolder);
-            _logger.LogInformation("Created output directory: {OutputFolder}", _options.OutputFolder);
+            Directory.CreateDirectory(outputFolder);
+            _logger.LogInformation("Created output directory: {OutputFolder}", outputFolder);
         }
     }
 
@@ -34,8 +35,9 @@ public class VideoRecorder
         try
         {
             var timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
-            var outputPath = Path.Combine(_options.OutputFolder, $"motion_{timestamp}.mp4");
-            
+            var outputFolder = GetOutputFolder();
+            var outputPath = Path.Combine(outputFolder, $"motion_{timestamp}.mp4");
+
             _logger.LogInformation("Starting video recording: {OutputPath}", outputPath);
 
             // Build FFmpeg command
@@ -58,16 +60,16 @@ public class VideoRecorder
             };
 
             using var process = new Process { StartInfo = processStartInfo };
-            
+
             var outputBuilder = new System.Text.StringBuilder();
             var errorBuilder = new System.Text.StringBuilder();
-            
+
             process.OutputDataReceived += (sender, e) =>
             {
                 if (!string.IsNullOrEmpty(e.Data))
                     outputBuilder.AppendLine(e.Data);
             };
-            
+
             process.ErrorDataReceived += (sender, e) =>
             {
                 if (!string.IsNullOrEmpty(e.Data))
@@ -86,7 +88,7 @@ public class VideoRecorder
             }
             else
             {
-                _logger.LogError("Video recording failed with exit code {ExitCode}. Error: {Error}", 
+                _logger.LogError("Video recording failed with exit code {ExitCode}. Error: {Error}",
                     process.ExitCode, errorBuilder.ToString());
             }
         }
@@ -98,5 +100,13 @@ public class VideoRecorder
         {
             _recordingSemaphore.Release();
         }
+    }
+
+    private string GetOutputFolder()
+    {
+        var rawPath = _options.OutputFolder;
+        var expandedPath = rawPath.Replace("~", Environment.GetFolderPath(Environment.SpecialFolder.UserProfile));
+
+        return expandedPath;
     }
 }
